@@ -46,7 +46,7 @@
 
 // ********** STATES *************
 #define WAIT            0
-#define ESCAPE_BORDER   1
+#define ESCAPE          1
 #define SEEK            2
 #define ATTACK1         3
 #define ATTACK2         4

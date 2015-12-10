@@ -180,7 +180,7 @@ void seek(void) {
 void ir_receive(void) {
     
     // Init Timer4 to internal source clock with 1:256 prescaler and a period of
-    // 15 (interrupt every .1ms)
+    // 16 (interrupt every .1ms)
     OpenTimer3(T3_ON | T3_SOURCE_INT | T3_PS_1_256, 0x0010);
     
     // Configure Interrupt timer with a priority of 1

@@ -21,7 +21,8 @@ char *powerstr = "00010000111011111101100000100111";
 char bitstr[33] = {0};
 
 int main(void) {
-        
+      
+    //RCONbits.BOR == 0;
     init_gpio();                        // Initialize neccessary Inputs/Outputs 
 
     INTEnableSystemMultiVectoredInt();  // Multivectored mode for multiple interrupts    
@@ -33,6 +34,19 @@ int main(void) {
     
     started = 0;
     state = WAIT;                       // Init the state of the system
+    
+    /*
+    // Check for brown out reset
+    if(RCONbits.BOR == 1){
+        state = SEEK;           // Start the match and seek the opponent
+        motor = FWD;            // Set the direction of the motor
+        CloseTimer3();          // Disable TIMER3
+        perp_enable();          // Enable all the peripherals and start match
+        timer_config();         // Init timers and their associated interrupts
+        RCONbits.BOR = 0;       // Reset flag
+        
+    }
+    */
     
     // This is the main loop for our program which incorporates a state machine
     while( 1){       
@@ -47,14 +61,14 @@ int main(void) {
             case SEEK:
                 seek();
                 break;
-            case ESCAPE_BORDER:
+            case ESCAPE:
                 escape_border();
                 break;
             case ATTACK1:
                 motor_control(SPD_7_5, SPD_7_5, FRWD, FRWD);
                 break;
             case ATTACK2:
-                motor_control(SPD_10, SPD_10, FRWD, FRWD);
+                motor_control(SPD_9, SPD_9, FRWD, FRWD);
                 break; 
         }
     }
@@ -68,55 +82,33 @@ int main(void) {
 void __ISR(4, ipl1) timer_1_handler(void) {
     mT1ClearIntFlag();
  
-    // Check for brown out reset
-    if(RCONbits.BOR == 1){
-        state = SEEK;           // Start the match and seek the opponent
-        motor = FWD;            // Set the direction of the motor
-        CloseTimer3();          // Disable TIMER3
-        perp_enable();          // Enable all the peripherals and start match
-        timer_config();         // Init timers and their associated interrupts
-        RCONbits.BOR = 0;       // Reset flag
-        
-    }
+    
     
     // Check if we are stuck in a state
     if(motor == FULL_PIV || motor == ROT_LEFT || motor == ROT_RIGHT) {
         statebreak++;
-        if(statebreak > 1500) {     // 2s check
+        if(statebreak > 1500) {     // 1.5s check
             statebreak = 0;
-            state = SEEK;
-            motor = FWD;
+            state = ESCAPE;
+            motor = REV_STR;
         }
     }
     else {
         statebreak = 0;
     }
     
-    /*
-    // Check if we are stuck in a attack state
-    if(state == ATTACK) {
-        attackbreak++;
-        if(attackbreak > 2500) {
-            attackbreak = 0;
-            state = DODGE;
-            motor = REV_STR;
-        }
-    } else {
-        attackbreak = 0;
-    }
-    */
     
     // ******** GROUND SENSORS *******
     // FL-G sensor check
     if(an10 < LINE_THRESH) {
-        state = ESCAPE_BORDER;
+        state = ESCAPE;
         motor = REV_STR;
         lpivflag = 1;
     }
     
     // FR-G sensor check
     else if(an9 < LINE_THRESH) {
-        state = ESCAPE_BORDER;
+        state = ESCAPE;
         motor = REV_STR;
         rpivflag = 1;
     }
@@ -127,16 +119,16 @@ void __ISR(4, ipl1) timer_1_handler(void) {
         motor = FWD;
     }
     
-    
-    if(state != ESCAPE_BORDER) {       
+    // Only use proximity sensors if we are not escaping the border
+    if(state != ESCAPE) {       
         
         
         // ******** PROXIMITY SENSORS **********
-        // FL / FR check. Only attack if both of the front sensors detect something
-        if(an4 > 275) {        
+        // Front check. Only attack if both of the front sensors detect something
+        if(an4 > 300) {        
             state = ATTACK1;
             
-            if(an4 > 800) {
+            if(an4 > 700) {
                 state = ATTACK2;
             }
         }
@@ -288,7 +280,7 @@ void __ISR(16, ipl3) timer_4_handler(void) {
     
     // Timer to count how long to reverse to and pivot for. We will reverse
     // for 300ms and then pivot for another 300ms.
-    if(state == ESCAPE_BORDER || state == DODGE) {
+    if(state == ESCAPE) {
         
         // Reverse the bot.
         if(motor == REV_STR) {
