@@ -1,7 +1,18 @@
+/******************************************************************************
+ * Program Name:   omus5_utils.c
+ * Author:         Nicholas Kelly
+ * Id:             814584401
+ * Date Submitted: 12/10/15
+ * Class:          CompE 490 Fall 2015
+ * Instructor:     John Kennedy
+ * Compiler:       XC32
+ * OS:             OSX-10.9.5
+ * Description:    Function definitions
+ * Input Files:    None
+ * Output Files:   None
+ *****************************************************************************/
 
 #include "omus5.h"
-
- 
 
 // Initialize all GPIO
 void init_gpio(void) {

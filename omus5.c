@@ -1,4 +1,16 @@
-// **************** OMUS 3 *********************
+/******************************************************************************
+ * Program Name:   omus5.c
+ * Author:         Nicholas Kelly
+ * Id:             814584401
+ * Date Submitted: 12/10/15
+ * Class:          CompE 490 Fall 2015
+ * Instructor:     John Kennedy
+ * Compiler:       XC32
+ * OS:             OSX-10.9.5
+ * Description:    Main
+ * Input Files:    None
+ * Output Files:   None
+ *****************************************************************************/
 
 #include "omus5.h"
 
@@ -22,7 +34,6 @@ char bitstr[33] = {0};
 
 int main(void) {
       
-    //RCONbits.BOR == 0;
     init_gpio();                        // Initialize neccessary Inputs/Outputs 
 
     INTEnableSystemMultiVectoredInt();  // Multivectored mode for multiple interrupts    
@@ -34,19 +45,6 @@ int main(void) {
     
     started = 0;
     state = WAIT;                       // Init the state of the system
-    
-    /*
-    // Check for brown out reset
-    if(RCONbits.BOR == 1){
-        state = SEEK;           // Start the match and seek the opponent
-        motor = FWD;            // Set the direction of the motor
-        CloseTimer3();          // Disable TIMER3
-        perp_enable();          // Enable all the peripherals and start match
-        timer_config();         // Init timers and their associated interrupts
-        RCONbits.BOR = 0;       // Reset flag
-        
-    }
-    */
     
     // This is the main loop for our program which incorporates a state machine
     while( 1){       
